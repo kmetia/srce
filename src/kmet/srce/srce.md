@@ -5,7 +5,7 @@ application's architecture — composition, services, agents, sessions — is in
 `docs/architecture.md`; this file is the kernel only: its
 ctx model, the lifecycle, the plugin contract, the contracts the tests pin, and
 what was deliberately left out. User-facing usage (what srce is for, the five
-principles and a how-to) is [`modules/srce/README.md`](../../../README.md); this
+principles and a how-to) is [`README.md`](../../../README.md); this
 file is the reference its contracts and internal decisions live in.
 
 The kernel is self-contained: it requires no kmet application namespace and no
@@ -69,9 +69,8 @@ for a body that has asynchronous setup (§13).
 ## 1. The kernel
 
 ```
-modules/srce/
-├── deps.edn           — rank 1, no dependencies today; add rank-0 :local/root
-│                        edges when a namespace needs one
+.
+├── deps.edn           — no runtime dependencies
 ├── test/kmet/srce/    — the contract tests (§12)
 └── src/kmet/
     └── srce/
@@ -83,14 +82,9 @@ modules/srce/
                           the six non-awaiting dispatch modes
 ```
 
-`kmet.srce.*` is rank 1 — it may require rank-0 code (`kmet.libs.*`), the
-external `kmet.loader.*` and `kmet.reakt.*` libraries, nothing at its own rank
-or above;
-the subnamespaces are internal and nothing above the kernel requires them.
-The module's `modules.edn` row — `:name "srce"`, the source/test paths,
-`:rank 1` — is also its classpath and embed entry: the manifest is the classpath
-order *and* the rank source `test/kmet/test_module_deps.clj` reads, and the
-five extension `bb.edn`s list the module sources too.
+The srce project is self-contained: its namespaces may require only other
+`kmet.srce.*` namespaces and third-party code. The subnamespaces are internal
+and nothing outside the kernel requires them.
 Consumers require exactly one namespace — the kernel's surface is one contract,
 not a set of modules whose callers each pick their own:
 

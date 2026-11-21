@@ -118,16 +118,14 @@ kmet module, and no third-party library.
 
 ```clojure
 ;; deps.edn — a checkout on disk
-{:deps {kmet/srce {:local/root "/path/to/kmet-agent/modules/srce"}}}
+{:deps {kmet/srce {:local/root "/path/to/srce"}}}
 
-;; deps.edn — a git checkout; :deps/root selects the module in the repository
-{:deps {kmet/srce {:git/url "https://github.com/kmetia/kmet-agent.git"
-                   :git/sha "<full-commit-sha>"
-                   :deps/root "modules/srce"}}}
+;; deps.edn — the published repository
+{:deps {kmet/srce {:git/url "https://github.com/kmetia/srce.git"
+                   :git/sha "<full-commit-sha>"}}}
 ```
 
-`:local/root` points at the directory holding `modules/srce/deps.edn`. For a
-git dependency, `:deps/root` selects the module inside the repository and
+`:local/root` points at the directory holding `deps.edn`. For a git dependency,
 `:git/sha` pins a full commit. The same `:deps` entry works in `bb.edn`; the
 sources are host-portable across babashka, JVM Clojure and Jolt.
 
@@ -137,9 +135,16 @@ Then require the one public namespace:
 (:require [kmet.srce.core :as srce])
 ```
 
-Inside the kmet checkout itself there is nothing to add: the workspace manifest
-lists the module, `bb.edn` puts it on the babashka path, and the module graph
-carries it to the JVM and Jolt.
+Inside the kmet checkout itself there is nothing to add: `deps.edn` pins this
+repository as `kmet/srce`, and `bb.edn` and the `:dev` alias use the sibling
+`../srce` checkout.
+
+## Tests
+
+    bb test
+    jolt test
+
+The JVM suite uses `clojure -M:test`.
 
 ## Quick start
 
@@ -497,7 +502,13 @@ kmet as one application built on it.
 | Document | What it covers |
 |---|---|
 | [`src/kmet/srce/srce.md`](src/kmet/srce/srce.md) | the implementation note: contracts, thread rule, parity matrix, deferred list |
-| [`design.md`](../app/src/kmet/design.md) | the app's design record: open seams, shipped limits, declined options |
-| [`docs/architecture.md`](../../docs/architecture.md) | module map, ranks and the contributor workflow |
-| [`modules/app/src/kmet/extension.md`](../app/src/kmet/extension.md) | the extension contract, which mounts on this kernel |
-| [`docs/extensions.md`](../../docs/extensions.md) | authoring extensions |
+| [`design.md`](https://github.com/kmetia/kmet-agent/blob/master/modules/app/src/kmet/design.md) | the app's design record: open seams, shipped limits, declined options |
+| [`docs/architecture.md`](https://github.com/kmetia/kmet-agent/blob/master/docs/architecture.md) | module map, ranks and the contributor workflow |
+| [`modules/app/src/kmet/extension.md`](https://github.com/kmetia/kmet-agent/blob/master/modules/app/src/kmet/extension.md) | the extension contract, which mounts on this kernel |
+| [`docs/extensions.md`](https://github.com/kmetia/kmet-agent/blob/master/docs/extensions.md) | authoring extensions |
+
+## License
+
+Copyright © 2026 — present Marko Kocic <marko@euptera.com>
+
+Licensed under the Eclipse Public License 2.0 ([EPL-2.0](LICENSE)).

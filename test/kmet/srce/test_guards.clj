@@ -1,17 +1,16 @@
 (ns kmet.srce.test-guards
-  "Guard: the kernel is rank-0 self-contained and the retired store stays gone.
+  "Guard: the kernel is self-contained and the retired store stays gone.
 
-   kmet.test-module-deps owns the rank ordering between modules; this owns what
-   a rank-1 module may name at all — the kernel may require kmet.libs.*,
-   kmet.loader.*, kmet.reakt.* and its own subnamespaces, nothing above it, and
-   never `kmet.libs.scope` (deleted at landing 4e, so the name is a tripwire
-   now rather than a dependency)."
+   Its namespaces may require other kmet.srce.* namespaces and third-party
+   code, but nothing else under kmet.* — no kmet application code and no other
+   kmet library. `kmet.libs.scope` was deleted at landing 4e, so the name stays
+   a tripwire rather than a dependency."
   (:require [babashka.fs :as fs]
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]))
 
 (def ^:private kernel-sources
-  (->> (fs/glob "modules/srce/src" "**/*.{clj,cljc}")
+  (->> (fs/glob "src" "**/*.{clj,cljc}")
        (map str)
        sort))
 
@@ -29,18 +28,15 @@
   (is (seq kernel-sources) "the guard found the kernel sources")
   (is (every? #(str/ends-with? % ".clj") kernel-sources)))
 
-(deftest kernel-requires-only-rank-zero-code
-  (testing "no app/ui/tui/tk name, or anything else above rank 0"
+(deftest kernel-requires-only-its-own-namespaces
+  (testing "no foreign kmet namespace"
     (doseq [f kernel-sources
             :let [kmet-deps (filter #(str/starts-with? (str %) "kmet.")
                                     (required-namespaces f))
-                  above (remove #(or (str/starts-with? (str %) "kmet.srce")
-                                     (str/starts-with? (str %) "kmet.libs.")
-                                     (str/starts-with? (str %) "kmet.loader.")
-                                     (str/starts-with? (str %) "kmet.reakt."))
-                                kmet-deps)]
-            :when (seq above)]
-      (is false (str f " requires above rank 0: " (vec above))))))
+                  foreign (remove #(str/starts-with? (str %) "kmet.srce")
+                                  kmet-deps)]
+            :when (seq foreign)]
+      (is false (str f " requires foreign kmet code: " (vec foreign))))))
 
 (deftest kernel-does-not-require-the-retired-store
   (doseq [f kernel-sources]

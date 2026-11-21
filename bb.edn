@@ -1,0 +1,10 @@
+{:paths ["src" "test"]
+ :tasks
+ {test {:doc "Run the srce suite"
+        :task (let [run-tests (requiring-resolve 'clojure.test/run-tests)
+                    nss '[kmet.srce.test-guards
+                          kmet.srce.test-kernel]]
+                (doseq [ns-sym nss] (require ns-sym))
+                (let [{:keys [fail error]} (apply run-tests nss)]
+                  (when (pos? (+ fail error))
+                    (System/exit 1))))}}}
